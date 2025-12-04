@@ -80,9 +80,25 @@ public class oca {
         }
     }
 
-    public void turn(String[] names, int[] cells, int[] penalization){
+    public void turn(Scanner sc, String[] names, int[] cells, int[] penalization){
         int player = currentTurn % 4;
         System.out.println("És el torn del jugador " + (player + 1)+ ": " + names[player]);
+        String throwDice = "";
+        do {
+            System.out.println("Tires?");
+            throwDice = sc.next();
+        }while(!throwDice.equals("tiro"));
+
+        if(cells[player] > 60){
+            int dice = (int) (Math.random() * 6) + 1;
+            System.out.println("has tret un " + dice);
+        }else {
+            int dice1 = (int) (Math.random() * 6) + 1;
+            int dice2 = (int) (Math.random() * 6) + 1;
+            System.out.println("has tret un " + dice1 + "i un " + dice2);
+        }
+
+
         currentTurn++;
     }
 
