@@ -36,23 +36,26 @@ public class oca {
 
     public int numPlayers(Scanner sc) {
         int num = 0;
+        boolean numOk = false;
         do {
             try {
                 num = sc.nextInt();
+                
             } catch (InputMismatchException e) {
                 System.out.println("Error: introdueix un nombre enter");
+                sc.nextLine();
             }
             if (num > 4) {
                 System.out.println("El nombre de jugadors ha de ser menor a 4");
                 num = 0;
-                sc.nextInt();
             } else if (num < 2) {
                 System.out.println("El nombre de jugadors ha de ser com a mínim 2");
                 num = 0;
-                sc.nextInt();
+            }else {
+                numOk = true;
             }
 
-        } while (num == 0);
+        } while (!numOk);
 
         return num;
     }
@@ -61,6 +64,7 @@ public class oca {
         String name = "";
         do{
             try {
+
                 name = sc.next();
             }catch(Exception e) {
                 System.out.println("Error");
@@ -113,7 +117,7 @@ public class oca {
                 int dice1 = diceThrow();
                 int dice2 = diceThrow();
                 
-                System.out.println("has tret un " + dice1 + "i un " + dice2);
+                System.out.println("has tret un " + dice1 + " i un " + dice2);
                 if(round[player] && dice36(dice1, dice2)){
                     cells[player] = 26;
                     System.out.println("Et mous a la casella " + cells[player]);
@@ -149,7 +153,7 @@ public class oca {
                 } 
                 currentTurn--;
             }
-
+            round[player] = false;
             cells[player] = bridge(cells[player]);
             cells[player] = death(cells[player]);
             cells[player] = labyrinth(cells[player]);
