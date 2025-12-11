@@ -4,6 +4,7 @@ import java.util.InputMismatchException;
 public class oca {
 
     int currentTurn = 0;
+    boolean finished = false;
 
     public static void main(String[] args) {
         oca p = new oca();
@@ -20,13 +21,15 @@ public class oca {
         int[] playerCells = new int[numPlayers];
         int[] playerPenalization = new int[numPlayers];
         boolean [] isInWell = new boolean[numPlayers];
+        boolean [] firstThrow = new boolean[numPlayers];
         
         int[] goose = {5, 9, 14, 18, 23, 27, 32, 36, 41, 45, 50, 54, 59};
 
 
         getPlayersNames(escaner, playerNames);
-        initializeGame(playerCells, playerPenalization, isInWell);
+        initializeGame(playerCells, playerPenalization, isInWell, firstThrow);
 
+        game(escaner, playerNames, playerCells, playerPenalization, goose, isInWell, firstThrow);
         
 
     }
@@ -37,14 +40,16 @@ public class oca {
             try {
                 num = sc.nextInt();
             } catch (InputMismatchException e) {
-                System.out.println("Error");
+                System.out.println("Error: introdueix un nombre enter");
             }
             if (num > 4) {
                 System.out.println("El nombre de jugadors ha de ser menor a 4");
                 num = 0;
+                sc.nextInt();
             } else if (num < 2) {
                 System.out.println("El nombre de jugadors ha de ser com a mínim 2");
                 num = 0;
+                sc.nextInt();
             }
 
         } while (num == 0);
@@ -72,20 +77,26 @@ public class oca {
         }
     }
 
-    public void initializeGame(int[] cell, int[] penalization, boolean[] well){
+    public void initializeGame(int[] cell, int[] penalization, boolean[] well, boolean[] round){
         for (int i = 0; i < cell.length; i++){
             cell[i] = 0;
             penalization[i] = 0;
             well[i] = false;
+            round[i] = true;
         }
     }
 
-    public void turn(Scanner sc, String[] names, int[] cells, int[] penalization, int[] goose, boolean[] well){
-        boolean finished = false;
+    public void game(Scanner sc, String[] names, int[] cells, int[] penalization, int[] goose, boolean[] well, boolean[] round){
+        do{
+            turn(sc, names, cells, penalization, goose, well, round);
+        }while(!finished);
+    }
+
+    public void turn(Scanner sc, String[] names, int[] cells, int[] penalization, int[] goose, boolean[] well, boolean[] round){
         int player = currentTurn % names.length;
         if(penalization[player] > 0){
             penalization[player]--;
-            System.out.println("Et salta el torn.");
+            System.out.println("Al jugador"+ player + 1 +" li salta el torn.");
         }else{
             System.out.println("És el torn del jugador " + (player + 1)+ ": " + names[player]);
             String throwDice = "";
@@ -103,16 +114,16 @@ public class oca {
                 int dice2 = diceThrow();
                 
                 System.out.println("has tret un " + dice1 + "i un " + dice2);
-                if(currentTurn < names.length && dice36(dice1, dice2)){
-
-                    System.out.println("De dado a dado y tiro porque me ha tocado");
+                if(round[player] && dice36(dice1, dice2)){
                     cells[player] = 26;
+                    System.out.println("Et mous a la casella " + cells[player]);
+                    System.out.println("De dado a dado y tiro porque me ha tocado");
                     currentTurn--;
 
-                }else if(currentTurn < names.length && dice45(dice1, dice2)){
-
-                    System.out.println("De dado a dado y tiro porque me ha tocado");
+                }else if(round[player] && dice45(dice1, dice2)){
                     cells[player] = 53;
+                    System.out.println("Et mous a la casella " + cells[player]);
+                    System.out.println("De dado a dado y tiro porque me ha tocado");
                     currentTurn--;
 
                 }else{
@@ -120,16 +131,18 @@ public class oca {
                     System.out.println("Avances fins la casella " + cells[player]);
                 }
             }
-            
+            cells[player] = rebound(cells[player]);
             if(isGoose(goose, cells[player])){
                 System.out.println("De oca en oca y tiro porque me toca");
                 for(int i = 0; i < goose.length; i++){
                     if(cells[player] == goose[i]){
                         if(i+1 == goose.length){
                             cells[player] = 63;
+
                         }
                         else{
                             cells[player] = goose[i + 1];
+                            System.out.println("Avances fins la casella " + cells[player]);
                         }
                         return;    
                     }
@@ -142,9 +155,11 @@ public class oca {
             cells[player] = labyrinth(cells[player]);
             penalization[player] = prison(cells[player], well, penalization, player);
 
-            
-            
-            
+            if(cells[player] == 63){
+                System.out.println("Felicitats! Has guanyat " + names[player] + "!");
+                finished = true;
+            }
+
         }
         currentTurn++;
         
@@ -206,6 +221,7 @@ public class oca {
     public int labyrinth(int cell) {
         if(cell == 42){
             cell = 39;
+            System.out.println("Has caigut al laberint tornes a la casella "+ cell);
         }
         return cell;
     }
@@ -214,19 +230,36 @@ public class oca {
         int turnsPunished = 0;
         if(cell == 19){
             turnsPunished = 1;
+            System.out.println("has caigut a la fonda torns penalitzats: " + turnsPunished);
         }else if(cell == 52){
             turnsPunished = 3;
+            System.out.println("has caigut a la presó torns penalitzats: " + turnsPunished);
         }else if(cell == 31){
+            turnsPunished = 2;
+            System.out.println("has caigut a la pou torns penalitzats: " + turnsPunished + "si ningú cau abans");
             for(int i = 0; i < well.length; i++){
                 if(well[i]){
                     well[i] = !well[i];
                     penalization[i] = 0;
+                    System.out.println("Jugador " + i + 1 + "ha pogut sortir del pou");
+
                 }
             }
             well[player] = !well[player];
-            turnsPunished = 2;
+            
         }
         return turnsPunished;
     }
+
+    public int rebound(int cell){
+        if (cell>63){
+            int excess = cell - 63;
+            cell = 63 - excess;
+            System.out.println("rebotes i caus a la casella " + cell);
+        }
+
+        return cell;
+    }
+
 
 }
