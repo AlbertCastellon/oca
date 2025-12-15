@@ -118,18 +118,8 @@ public class oca {
                 int dice2 = diceThrow();
                 
                 System.out.println("has tret un " + dice1 + " i un " + dice2);
-                if(round[player] && dice36(dice1, dice2)){
-                    cells[player] = 26;
-                    System.out.println("Et mous a la casella " + cells[player]);
-                    System.out.println("De dado a dado y tiro porque me ha tocado");
-                    currentTurn--;
-
-                }else if(round[player] && dice45(dice1, dice2)){
-                    cells[player] = 53;
-                    System.out.println("Et mous a la casella " + cells[player]);
-                    System.out.println("De dado a dado y tiro porque me ha tocado");
-                    currentTurn--;
-
+                if(round[player]){
+                    cells[player] = dices(dice1, dice2, cells[player]);
                 }else{
                     cells[player] += dice1 + dice2;
                     System.out.println("Avances fins la casella " + cells[player]);
@@ -201,6 +191,22 @@ public class oca {
         return result;
     }
 
+    public int dices(int dice1, int dice2, int cell) {
+        if(dice36(dice1, dice2) ||dice45(dice1, dice2)){
+            
+            if(dice36(dice1, dice2)){
+                cell = 26;
+            }else{
+                cell = 53;
+            }
+            System.out.println("Et mous a la casella " + cell);
+            System.out.println("De dado a dado y tiro porque me ha tocado");
+            currentTurn--;
+        }
+        
+        return cell;
+    }
+    
     public int bridge(int cell){
         if(cell == 6 || cell == 12) {
             System.out.println("De puente a puente y tiro porque me de la corriente.");
